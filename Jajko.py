@@ -2,7 +2,6 @@ import numpy as np
 import random
 from OpenGL.GL import *
 
-
 class Jajko:
     # Parametr N określa liczbę punktów w siatce (większe N zwiększa liczbę linii) ale i bardziej obciąży komputer
     N = 30
