@@ -1,7 +1,6 @@
 import numpy as np
 from OpenGL.GL import *
 
-
 class Czajnik:
     nodes = []
 
