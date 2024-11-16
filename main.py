@@ -1,3 +1,4 @@
+import math
 import sys
 import threading
 
@@ -24,8 +25,6 @@ gui = GUI()
 x_angle = 0.0
 y_angle = 0.0
 z_angle = 0.0
-
-# Flagi do śledzenia stanu klawiszy
 rotate_x_up = False
 rotate_x_down = False
 rotate_y_left = False
@@ -33,36 +32,41 @@ rotate_y_right = False
 rotate_z_left = False
 rotate_z_right = False
 
-viewer = [0.0, 0.0, 10.0]
+# Kamera
+radius = 10.0  # Promień (odległość kamery od centrum)
+angle = 0.0  # Obrót wokół osi Y
+elevation = 0.0  # Obrót wokół osi X (góra/dół)
+cx, cy, cz = 0.0, 0.0, 0.0  # Środek okręgu (punkt, na który patrzy kamera)
 
-theta = 0.0
-pix2angle = 1.0
-
-left_mouse_button_pressed = 0
+# Mysz
 mouse_x_pos_old = 0
-delta_x = 0
+mouse_y_pos_old = 0
+left_mouse_button_pressed = False
+
 
 def shutdown():
     pass
 
 
 def render(time):
-    global theta
+    global angle, elevation, radius
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)  # Wyczyść bufor koloru i bufor głębokości
     glLoadIdentity()  # Załaduj macierz jednostkową, aby zresetować bieżący stan przekształcenia
 
-    gluLookAt(viewer[0]+theta, viewer[1], viewer[2],
-              0.0, 0.0, 0.0,
+    # Oblicz pozycję kamery
+    eyeX = cx + radius * math.cos(math.radians(elevation)) * math.cos(math.radians(angle))
+    eyeY = cy + radius * math.sin(math.radians(elevation))
+    eyeZ = cz + radius * math.cos(math.radians(elevation)) * math.sin(math.radians(angle))
+
+    gluLookAt(eyeX, eyeY, eyeZ,
+              cx, cy, cz,
               0.0, 1.0, 0.0)
 
-    if left_mouse_button_pressed:
-        theta += delta_x * pix2angle
+    draw_axes()
 
-
-
-    glRotatef(x_angle, 1, 0, 0)  # Obróć scenę wokół osi X o kąt `x_angle`
-    glRotatef(y_angle, 0, 1, 0)  # Obróć scenę wokół osi Y o kąt `y_angle`
-    glRotatef(z_angle, 0, 0, 1)  # Obróć scenę wokół osi Z o kąt `z_angle`
+    glRotatef(x_angle, 1, 0, 0)  # Obróć obiekt wokół osi X o kąt `x_angle`
+    glRotatef(y_angle, 0, 1, 0)  # Obróć obiekt wokół osi Y o kąt `y_angle`
+    glRotatef(z_angle, 0, 0, 1)  # Obróć obiekt wokół osi Z o kąt `z_angle`
 
     if gui.model == 0:
         czajnik.render()  # Renderuj model czajnika, jeśli jest wybrany
@@ -73,6 +77,76 @@ def render(time):
             jajko.render_egg_with_triangles()  # Renderuj jajko za pomocą trójkątów
         elif gui.kindOfEgg == 2:
             jajko.render_egg_with_triangle_strip()  # Renderuj jajko za pomocą "triangle strip"
+
+
+def draw_axes():
+    glBegin(GL_LINES)
+
+    # Oś X (czerwona)
+    glColor3f(1.0, 0.0, 0.0)  # Czerwony
+    glVertex3f(-1.0, 0.0, 0.0)
+    glVertex3f(1.0, 0.0, 0.0)
+
+    # Oś Y (zielona)
+    glColor3f(0.0, 1.0, 0.0)  # Zielony
+    glVertex3f(0.0, -1.0, 0.0)
+    glVertex3f(0.0, 1.0, 0.0)
+
+    # Oś Z (niebieska)
+    glColor3f(0.0, 0.0, 1.0)  # Niebieski
+    glVertex3f(0.0, 0.0, -1.0)
+    glVertex3f(0.0, 0.0, 1.0)
+
+    glEnd()
+
+
+def update_viewport(window, width, height):
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+
+    gluPerspective(70, 1.0, 0.1, 300.0)
+
+    if width <= height:
+        glViewport(0, int((height - width) / 2), width, width)
+    else:
+        glViewport(int((width - height) / 2), 0, height, height)
+
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+
+
+def mouse_motion_callback(window, x_pos, y_pos):
+    global mouse_x_pos_old, mouse_y_pos_old
+    global angle, elevation
+    global left_mouse_button_pressed
+
+    if left_mouse_button_pressed:  # Obracaj kamerę tylko, gdy lewy przycisk myszy jest wciśnięty
+        delta_x = x_pos - mouse_x_pos_old
+        delta_y = y_pos - mouse_y_pos_old
+
+        angle += delta_x * 0.5  # Obrót w poziomie (wokół osi Y)
+        elevation += delta_y * 0.5  # Obrót w pionie (wokół osi X)
+
+        elevation = max(-89.0, min(89.0, elevation))  # Ogranicz kąt pionowy, aby uniknąć problemów z "flipem"
+
+    mouse_x_pos_old = x_pos
+    mouse_y_pos_old = y_pos
+
+
+def mouse_button_callback(window, button, action, mods):
+    global left_mouse_button_pressed
+
+    if button == GLFW_MOUSE_BUTTON_LEFT:
+        if action == GLFW_PRESS:
+            left_mouse_button_pressed = True
+        elif action == GLFW_RELEASE:
+            left_mouse_button_pressed = False
+
+
+def scroll_callback(window, x_offset, y_offset):
+    global radius
+    radius -= y_offset * 0.5  # Zmiana promienia w zależności od scrolla
+    radius = max(2.0, min(50.0, radius))  # Ogranicz odległość od centrum
 
 
 def key_callback(window, key, scancode, action, mods):
@@ -109,44 +183,6 @@ def key_callback(window, key, scancode, action, mods):
             rotate_z_right = False  # Ustaw flagę na FALSE dla "E"
 
 
-def update_viewport(window, width, height):
-    global pix2angle
-    pix2angle = 360.0 / width
-
-    glMatrixMode(GL_PROJECTION)
-    glLoadIdentity()
-
-    gluPerspective(70, 1.0, 0.1, 300.0)
-
-    if width <= height:
-        glViewport(0, int((height - width) / 2), width, width)
-    else:
-        glViewport(int((width - height) / 2), 0, height, height)
-
-    glMatrixMode(GL_MODELVIEW)
-    glLoadIdentity()
-
-def keyboard_key_callback(window, key, scancode, action, mods):
-    if key == GLFW_KEY_ESCAPE and action == GLFW_PRESS:
-        glfwSetWindowShouldClose(window, GLFW_TRUE)
-
-
-def mouse_motion_callback(window, x_pos, y_pos):
-    global delta_x
-    global mouse_x_pos_old
-
-    delta_x = x_pos - mouse_x_pos_old
-    mouse_x_pos_old = x_pos
-
-
-def mouse_button_callback(window, button, action, mods):
-    global left_mouse_button_pressed
-
-    if button == GLFW_MOUSE_BUTTON_LEFT and action == GLFW_PRESS:
-        left_mouse_button_pressed = 1
-    else:
-        left_mouse_button_pressed = 0
-
 def main():
     global x_angle, y_angle, z_angle
     render_thread = threading.Thread(target=gui.change_model)
@@ -162,15 +198,16 @@ def main():
 
     glfwMakeContextCurrent(window)  # Ustaw kontekst renderowania na stworzone okno
     glfwSetFramebufferSizeCallback(window, update_viewport)  # Zarejestruj callback do zmiany rozmiaru okna
-    glfwSetKeyCallback(window, keyboard_key_callback)
-    glfwSetCursorPosCallback(window, mouse_motion_callback)
-    glfwSetMouseButtonCallback(window, mouse_button_callback)
+    glfwSetCursorPosCallback(window, mouse_motion_callback) #zarejestruj pozycję kursora
+    glfwSetMouseButtonCallback(window, mouse_button_callback) #zarejestruj kliknięcie myszki
+    glfwSetScrollCallback(window, scroll_callback)  # Obsługa scrolla myszy
+    glfwSetKeyCallback(window, key_callback)  # Zarejestruj callback dla obsługi klawiszy
     glfwSwapInterval(1)  # Ustaw synchronizację klatek (1 dla V-sync)
 
     startup()
-    glfwSetKeyCallback(window, key_callback)  # Zarejestruj callback dla obsługi klawiszy
 
     while not glfwWindowShouldClose(window):  # Pętla główna aplikacji
+        # Obracanie obiektu na podstawie wciśniętych klawiszy
         if rotate_x_up:
             x_angle += 1.0  # Zwiększ kąt obrotu wokół osi X
         if rotate_x_down:
@@ -187,8 +224,8 @@ def main():
         render(glfwGetTime())  # Renderuj scenę, przekazując czas jako parametr
         glfwSwapBuffers(window)  # Zamień bufory (double buffering)
         glfwPollEvents()  # Przetwórz zdarzenia systemowe, takie jak naciśnięcia klawiszy i ruch myszy
-    shutdown()
 
+    shutdown()
     glfwTerminate()  # Zakończ działanie GLFW
 
 

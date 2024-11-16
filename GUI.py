@@ -31,4 +31,5 @@ class GUI:
         print("Aby zmienić wyświetlany obraz na ekranie wybierz odpowiednią opcję w kosoli wpisując w nowej lini wybrany nuemr opcji a następnie naciśnij ENTER")
         print("Po wybraniu opcji i nacisnieciu enter nalezy nacisnąć okno z wyświetlanym obrazem, aby móc ponownie obracać go przy pomocy klawiszy klawiatury")
 
+    
 
