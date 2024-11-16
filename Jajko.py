@@ -4,7 +4,7 @@ from OpenGL.GL import *
 
 class Jajko:
     # Parametr N określa liczbę punktów w siatce (większe N zwiększa liczbę linii) ale i bardziej obciąży komputer
-    N = 30
+    N = 5
     # Tablica NxNx3 przechowująca współrzędne punktów (x, y, z)
     tab = np.zeros((N, N, 3))
     # Tablica NxNx3 przechowująca losowe kolory dla każdego punktu
@@ -41,6 +41,7 @@ class Jajko:
 
     # Funkcja odpowiedzialna za generowanie jajka przy pomocy trójkątów
     def render_egg_with_triangles(self):
+        glEnable(GL_SMOOTH)
         glBegin(GL_TRIANGLES)  # Rozpocznij rysowanie trójkątów
         for i in range(self.N - 1):
             for j in range(self.N - 1):
@@ -54,6 +55,7 @@ class Jajko:
                 glVertex3f(*self.tab[i + 1, j + 1])  # Drugi wierzchołek
                 glVertex3f(*self.tab[i + 1, j])  # Trzeci wierzchołek
         glEnd()  # Zakończ rysowanie trójkątów
+        glDisable(GL_SMOOTH)
 
     # Funkcja odpowiedzialna za generowanie jajka przy pomocy siatki trójkątów
     def render_egg_with_triangle_strip(self):
@@ -62,7 +64,7 @@ class Jajko:
             for j in range(self.N):
                 glColor3f(*self.colors[i][j])  # Ustaw kolor dla pierwszego wierzchołka
                 glVertex3f(*self.tab[i, j])  # Pierwszy wierzchołek trójkąta
-                glColor3f(*self.colors[i + 1][j])  # Ustaw kolor dla drugiego wierzchołka
+                # glColor3f(*self.colors[i + 1][j])  # Ustaw kolor dla drugiego wierzchołka
                 glVertex3f(*self.tab[i + 1, j])  # Drugi wierzchołek trójkąta
             glEnd()  # Zakończ rysowanie siatki trójkątów
         glFlush()  # Wymuś wykonanie wszystkich komend OpenGL

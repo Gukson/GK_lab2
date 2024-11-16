@@ -1,5 +1,7 @@
 import sys
 import threading
+
+from OpenGL.raw.GLU import gluPerspective, gluLookAt
 from glfw.GLFW import *
 from OpenGL.GL import *
 from Jajko import Jajko
@@ -31,14 +33,32 @@ rotate_y_right = False
 rotate_z_left = False
 rotate_z_right = False
 
+viewer = [0.0, 0.0, 10.0]
+
+theta = 0.0
+pix2angle = 1.0
+
+left_mouse_button_pressed = 0
+mouse_x_pos_old = 0
+delta_x = 0
 
 def shutdown():
     pass
 
 
 def render(time):
+    global theta
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)  # Wyczyść bufor koloru i bufor głębokości
     glLoadIdentity()  # Załaduj macierz jednostkową, aby zresetować bieżący stan przekształcenia
+
+    gluLookAt(viewer[0]+theta, viewer[1], viewer[2],
+              0.0, 0.0, 0.0,
+              0.0, 1.0, 0.0)
+
+    if left_mouse_button_pressed:
+        theta += delta_x * pix2angle
+
+
 
     glRotatef(x_angle, 1, 0, 0)  # Obróć scenę wokół osi X o kąt `x_angle`
     glRotatef(y_angle, 0, 1, 0)  # Obróć scenę wokół osi Y o kąt `y_angle`
@@ -90,24 +110,42 @@ def key_callback(window, key, scancode, action, mods):
 
 
 def update_viewport(window, width, height):
-    if width == 0:
-        width = 1
-    if height == 0:
-        height = 1
-    aspect_ratio = width / height
+    global pix2angle
+    pix2angle = 360.0 / width
 
-    glMatrixMode(GL_PROJECTION)  # Ustaw macierz projekcji
-    glViewport(0, 0, width, height)  # Ustaw obszar renderowania na całe okno
-    glLoadIdentity()  # Zresetuj macierz projekcji
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+
+    gluPerspective(70, 1.0, 0.1, 300.0)
 
     if width <= height:
-        glOrtho(-7.5, 7.5, -7.5 / aspect_ratio, 7.5 / aspect_ratio, 7.5, -7.5)  # Ustaw projekcję ortograficzną
+        glViewport(0, int((height - width) / 2), width, width)
     else:
-        glOrtho(-7.5 * aspect_ratio, 7.5 * aspect_ratio, -7.5, 7.5, 7.5, -7.5)
+        glViewport(int((width - height) / 2), 0, height, height)
 
-    glMatrixMode(GL_MODELVIEW)  # Powrót do macierzy modelu/widoku
-    glLoadIdentity()  # Zresetuj macierz modelu/widoku
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
 
+def keyboard_key_callback(window, key, scancode, action, mods):
+    if key == GLFW_KEY_ESCAPE and action == GLFW_PRESS:
+        glfwSetWindowShouldClose(window, GLFW_TRUE)
+
+
+def mouse_motion_callback(window, x_pos, y_pos):
+    global delta_x
+    global mouse_x_pos_old
+
+    delta_x = x_pos - mouse_x_pos_old
+    mouse_x_pos_old = x_pos
+
+
+def mouse_button_callback(window, button, action, mods):
+    global left_mouse_button_pressed
+
+    if button == GLFW_MOUSE_BUTTON_LEFT and action == GLFW_PRESS:
+        left_mouse_button_pressed = 1
+    else:
+        left_mouse_button_pressed = 0
 
 def main():
     global x_angle, y_angle, z_angle
@@ -124,6 +162,9 @@ def main():
 
     glfwMakeContextCurrent(window)  # Ustaw kontekst renderowania na stworzone okno
     glfwSetFramebufferSizeCallback(window, update_viewport)  # Zarejestruj callback do zmiany rozmiaru okna
+    glfwSetKeyCallback(window, keyboard_key_callback)
+    glfwSetCursorPosCallback(window, mouse_motion_callback)
+    glfwSetMouseButtonCallback(window, mouse_button_callback)
     glfwSwapInterval(1)  # Ustaw synchronizację klatek (1 dla V-sync)
 
     startup()
