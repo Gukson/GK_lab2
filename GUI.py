@@ -17,7 +17,7 @@ class GUI:
         print("Wybierz jaki rodzaj jajka chcesz wyświrtlić:")
         print("0. Jajko stworzone z samych lini")
         print("1. Jajko stworzone z kolorowych trójkątów")
-        print("2. Jajko stworzone z "'Triangle_Strip')
+        print("2. Gładkie kolorowe jajko")
 
         self.kindOfEgg = int(input())
         self.change_model()
