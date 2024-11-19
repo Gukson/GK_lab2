@@ -3,16 +3,20 @@ import random
 from OpenGL.GL import *
 
 
-
 class Jajko:
     # Parametr N określa liczbę punktów w siatce (większe N zwiększa liczbę linii) ale i bardziej obciąży komputer
     N = 5
-    # Tablica NxNx3 przechowująca współrzędne punktów (x, y, z)
-    tab = np.zeros((N, N, 3))
-    # Tablica NxNx3 przechowująca losowe kolory dla każdego punktu
-    colors = np.zeros((N, N, 3))
-
+    tab = np.array([])
+    color = np.array([])
     def __init__(self):
+        if self.N % 2 == 0:
+            self.N += 1
+
+        # Tablica NxNx3 przechowująca współrzędne punktów (x, y, z)
+        self.tab = np.zeros((self.N, self.N, 3))
+        # Tablica NxNx3 przechowująca losowe kolory dla każdego punktu
+        self.colors = np.zeros((self.N, self.N, 3))
+
         # Generowanie wartości u i v dla parametrów
         __u_values = np.linspace(0.0, 1.0, self.N)
         __v_values = np.linspace(0.0, 1.0, self.N)
@@ -24,6 +28,7 @@ class Jajko:
                 x = (-90 * u ** 5 + 225 * u ** 4 - 270 * u ** 3 + 180 * u ** 2 - 45 * u) * np.cos(np.pi * v)
                 y = 160 * u ** 4 - 320 * u ** 3 + 160 * u ** 2 - 5
                 z = (-90 * u ** 5 + 225 * u ** 4 - 270 * u ** 3 + 180 * u ** 2 - 45 * u) * np.sin(np.pi * v)
+
                 self.tab[i, j] = [x, y, z]  # Przechowywanie współrzędnych punktu w tablicy
                 self.colors[i, j] = [random.random(), random.random(), random.random()]  # Przypisanie losowego koloru
 
@@ -43,7 +48,7 @@ class Jajko:
 
     # Funkcja odpowiedzialna za generowanie jajka przy pomocy trójkątów
     def render_egg_with_triangles(self):
-        glEnable(GL_SMOOTH)
+        glShadeModel(GL_SMOOTH)
         glBegin(GL_TRIANGLES)  # Rozpocznij rysowanie trójkątów
         for i in range(self.N - 1):
             for j in range(self.N - 1):
@@ -57,7 +62,6 @@ class Jajko:
                 glVertex3f(*self.tab[i + 1, j + 1])  # Drugi wierzchołek
                 glVertex3f(*self.tab[i + 1, j])  # Trzeci wierzchołek
         glEnd()  # Zakończ rysowanie trójkątów
-        glDisable(GL_SMOOTH)
 
     # Funkcja odpowiedzialna za generowanie jajka przy pomocy siatki trójkątów
     def render_egg_with_triangle_strip(self):
