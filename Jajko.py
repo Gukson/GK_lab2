@@ -5,10 +5,14 @@ from OpenGL.GL import *
 
 class Jajko:
     # Parametr N określa liczbę punktów w siatce (większe N zwiększa liczbę linii) ale i bardziej obciąży komputer
-    N = 5
+    N = 31
     tab = np.array([])
     color = np.array([])
+
     def __init__(self):
+        self.generste_nodes()
+
+    def generste_nodes(self):
         if self.N % 2 == 0:
             self.N += 1
 
@@ -32,6 +36,7 @@ class Jajko:
                 self.tab[i, j] = [x, y, z]  # Przechowywanie współrzędnych punktu w tablicy
                 self.colors[i, j] = [random.random(), random.random(), random.random()]  # Przypisanie losowego koloru
 
+
     # Funkcja odpowiedzialna za generowanie jajka z samych linii
     def render_line_egg(self):
         glBegin(GL_LINES)  # Rozpocznij rysowanie linii
@@ -48,7 +53,6 @@ class Jajko:
 
     # Funkcja odpowiedzialna za generowanie jajka przy pomocy trójkątów
     def render_egg_with_triangles(self):
-        glShadeModel(GL_SMOOTH)
         glBegin(GL_TRIANGLES)  # Rozpocznij rysowanie trójkątów
         for i in range(self.N - 1):
             for j in range(self.N - 1):
@@ -66,11 +70,12 @@ class Jajko:
     # Funkcja odpowiedzialna za generowanie jajka przy pomocy siatki trójkątów
     def render_egg_with_triangle_strip(self):
         for i in range(self.N - 1):
+            glShadeModel(GL_SMOOTH)
             glBegin(GL_TRIANGLE_STRIP)  # Rozpocznij rysowanie siatki trójkątów
             for j in range(self.N):
                 glColor3f(*self.colors[i][j])  # Ustaw kolor dla pierwszego wierzchołka
                 glVertex3f(*self.tab[i, j])  # Pierwszy wierzchołek trójkąta
-                # glColor3f(*self.colors[i + 1][j])  # Ustaw kolor dla drugiego wierzchołka
+                glColor3f(*self.colors[i + 1][j])  # Ustaw kolor dla drugiego wierzchołka
                 glVertex3f(*self.tab[i + 1, j])  # Drugi wierzchołek trójkąta
             glEnd()  # Zakończ rysowanie siatki trójkątów
         glFlush()  # Wymuś wykonanie wszystkich komend OpenGL
