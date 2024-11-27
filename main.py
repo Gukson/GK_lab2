@@ -8,6 +8,7 @@ from OpenGL.GL import *
 from Jajko import Jajko
 from Czajnik import Czajnik
 from GUI import GUI
+from Axes import *
 
 
 def startup():
@@ -79,25 +80,6 @@ def render(time):
             jajko.render_egg_with_triangle_strip()  # Renderuj jajko za pomocą "triangle strip"
 
 
-def draw_axes():
-    glBegin(GL_LINES)
-
-    # Oś X (czerwona)
-    glColor3f(5.0, 0.0, 0.0)  # Czerwony
-    glVertex3f(-5.0, 0.0, 0.0)
-    glVertex3f(5.0, 0.0, 0.0)
-
-    # Oś Y (zielona)
-    glColor3f(0.0, 5.0, 0.0)  # Zielony
-    glVertex3f(0.0, -5.0, 0.0)
-    glVertex3f(0.0, 5.0, 0.0)
-
-    # Oś Z (niebieska)
-    glColor3f(0.0, 0.0, 5.0)  # Niebieski
-    glVertex3f(0.0, 0.0, -5.0)
-    glVertex3f(0.0, 0.0, 5.0)
-
-    glEnd()
 
 
 def update_viewport(window, width, height):
