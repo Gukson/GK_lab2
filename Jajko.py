@@ -10,9 +10,22 @@ class Jajko:
     color = np.array([])
 
     def __init__(self):
-        self.generste_nodes()
+        self.generate_nodes()
+        self.compute_normals()
 
-    def generste_nodes(self):
+    def compute_normals(self):
+        self.normals = np.zeros((self.N, self.N, 3))  # Tablica na normalne
+
+        for i in range(self.N):
+            for j in range(self.N):
+                # Punkt na powierzchni jajka
+                x, y, z = self.tab[i, j]
+
+                # Normalizacja wektora normalnego (prosty wektor skierowany na zewnątrz)
+                length = np.sqrt(x ** 2 + y ** 2 + z ** 2)
+                self.normals[i, j] = [x / length, y / length, z / length]
+
+    def generate_nodes(self):
         if self.N % 2 == 0:
             self.N += 1
 
@@ -36,7 +49,6 @@ class Jajko:
                 self.tab[i, j] = [x, y, z]  # Przechowywanie współrzędnych punktu w tablicy
                 self.colors[i, j] = [random.random(), random.random(), random.random()]  # Przypisanie losowego koloru
 
-
     # Funkcja odpowiedzialna za generowanie jajka z samych linii
     def render_line_egg(self):
         glBegin(GL_LINES)  # Rozpocznij rysowanie linii
@@ -53,19 +65,35 @@ class Jajko:
 
     # Funkcja odpowiedzialna za generowanie jajka przy pomocy trójkątów
     def render_egg_with_triangles(self):
-        glBegin(GL_TRIANGLES)  # Rozpocznij rysowanie trójkątów
+        glBegin(GL_TRIANGLES)
         for i in range(self.N - 1):
             for j in range(self.N - 1):
-                glColor3f(*self.colors[i, j])  # Ustaw kolor dla pierwszego trójkąta
-                glVertex3f(*self.tab[i, j + 1])  # Pierwszy wierzchołek trójkąta
-                glVertex3f(*self.tab[i, j])  # Drugi wierzchołek trójkąta
-                glVertex3f(*self.tab[i + 1, j])  # Trzeci wierzchołek trójkąta
+                # Pierwszy trójkąt
+                glColor3f()  # Ustawienie koloru na biały
+                glNormal3f(*self.normals[i, j + 1])
+                glVertex3f(*self.tab[i, j + 1])
 
-                glColor3f(*self.colors[i + 1, j + 1])  # Ustaw kolor dla kolejnego trójkąta
-                glVertex3f(*self.tab[i, j + 1])  # Pierwszy wierzchołek drugiego trójkąta
-                glVertex3f(*self.tab[i + 1, j + 1])  # Drugi wierzchołek
-                glVertex3f(*self.tab[i + 1, j])  # Trzeci wierzchołek
-        glEnd()  # Zakończ rysowanie trójkątów
+                glColor3f(1.0, 1.0, 1.0)  # Ustawienie koloru na biały
+                glNormal3f(*self.normals[i, j])
+                glVertex3f(*self.tab[i, j])
+
+                glColor3f(1.0, 1.0, 1.0)  # Ustawienie koloru na biały
+                glNormal3f(*self.normals[i + 1, j])
+                glVertex3f(*self.tab[i + 1, j])
+
+                # Drugi trójkąt
+                glColor3f(1.0, 1.0, 1.0)  # Ustawienie koloru na biały
+                glNormal3f(*self.normals[i, j + 1])
+                glVertex3f(*self.tab[i, j + 1])
+
+                glColor3f(1.0, 1.0, 1.0)  # Ustawienie koloru na biały
+                glNormal3f(*self.normals[i + 1, j + 1])
+                glVertex3f(*self.tab[i + 1, j + 1])
+
+                glColor3f(1.0, 1.0, 1.0)  # Ustawienie koloru na biały
+                glNormal3f(*self.normals[i + 1, j])
+                glVertex3f(*self.tab[i + 1, j])
+        glEnd()
 
     # Funkcja odpowiedzialna za generowanie jajka przy pomocy siatki trójkątów
     def render_egg_with_triangle_strip(self):

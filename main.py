@@ -9,6 +9,7 @@ from Jajko import Jajko
 from Czajnik import Czajnik
 from GUI import GUI
 from Axes import *
+from Light import Light
 
 
 def startup():
@@ -21,6 +22,8 @@ jajko = Jajko()
 czajnik = Czajnik()
 czajnik.load()
 gui = GUI()
+light = Light(GL_LIGHT0)
+light2 = Light(GL_LIGHT1)
 
 # Inicjalizacja zmiennych globalnych
 x_angle = 0.0
@@ -65,6 +68,9 @@ def render(time):
 
     draw_axes()
 
+    light.render()
+    light2.render()
+
     glRotatef(x_angle, 1, 0, 0)  # Obróć obiekt wokół osi X o kąt `x_angle`
     glRotatef(y_angle, 0, 1, 0)  # Obróć obiekt wokół osi Y o kąt `y_angle`
     glRotatef(z_angle, 0, 0, 1)  # Obróć obiekt wokół osi Z o kąt `z_angle`
@@ -78,8 +84,6 @@ def render(time):
             jajko.render_egg_with_triangles()  # Renderuj jajko za pomocą trójkątów
         elif gui.kindOfEgg == 2:
             jajko.render_egg_with_triangle_strip()  # Renderuj jajko za pomocą "triangle strip"
-
-
 
 
 def update_viewport(window, width, height):
@@ -180,11 +184,17 @@ def main():
 
     glfwMakeContextCurrent(window)  # Ustaw kontekst renderowania na stworzone okno
     glfwSetFramebufferSizeCallback(window, update_viewport)  # Zarejestruj callback do zmiany rozmiaru okna
-    glfwSetCursorPosCallback(window, mouse_motion_callback) #zarejestruj pozycję kursora
-    glfwSetMouseButtonCallback(window, mouse_button_callback) #zarejestruj kliknięcie myszki
+    glfwSetCursorPosCallback(window, mouse_motion_callback)  #zarejestruj pozycję kursora
+    glfwSetMouseButtonCallback(window, mouse_button_callback)  #zarejestruj kliknięcie myszki
     glfwSetScrollCallback(window, scroll_callback)  # Obsługa scrolla myszy
     glfwSetKeyCallback(window, key_callback)  # Zarejestruj callback dla obsługi klawiszy
     glfwSwapInterval(1)  # Ustaw synchronizację klatek (1 dla V-sync)
+
+    glEnable(GL_LIGHTING)  # Włącz oświetlenie
+    glEnable(GL_LIGHT0)  # Włącz pierwsze źródło światła
+    glEnable(GL_LIGHT1)  # Włącz drugie źródło światła
+    glEnable(GL_BLEND)
+    # glBlendFunc(GL_SRC_ALPHA, GL_ONE)  # Ustawienie funkcji mieszania
 
     startup()
 
