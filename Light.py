@@ -19,19 +19,19 @@ class Light:
 
         # Ustawienie koloru światła (intensywność w RGB)
         self.light_color = [
-            float(input("Podaj intensywność światła ambient (0-1) [R]: ")),
-            float(input("Podaj intensywność światła ambient (0-1) [G]: ")),
-            float(input("Podaj intensywność światła ambient (0-1) [B]: ")),
+            float(input("Podaj kolor światła (0-1) [R]: ")),
+            float(input("Podaj kolor światła (0-1) [G]: ")),
+            float(input("Podaj kolor światła (0-1) [B]: ")),
             1.0  # Alfa
         ]
 
         # Ustawienie intensywności dla komponentów światła
         self.diffuse_intensity = float(input("Podaj intensywność światła diffuse (0-1): "))
         self.specular_intensity = float(input("Podaj intensywność światła specular (0-1): "))
+        self.ambient = float(input("Podaj ambient (0-1): "))
 
         self.calculate_position()
         self.light_id = light_id
-
     def calculate_position(self):
         # Przeliczenie pozycji w układzie sferycznym na kartezjański
         azimuth_rad = math.radians(self.azimuth)
@@ -53,7 +53,7 @@ class Light:
 
         # Ambient (ogólne tło oświetlenie, z mniejszą intensywnością)
         glLightfv(self.light_id, GL_AMBIENT,
-                  [self.light_color[0] * 0.2, self.light_color[1] * 0.2, self.light_color[2] * 0.2, 1.0])
+                  [self.light_color[0] * self.ambient, self.light_color[1] * self.ambient, self.light_color[2] * self.ambient, 1.0])
 
         # Diffuse (światło bezpośrednie, główna część światła)
         glLightfv(self.light_id, GL_DIFFUSE,
@@ -85,4 +85,3 @@ class Light:
         gluSphere(quadric, 0.2, 10, 10)  # Narysowanie małej kuli
         gluDeleteQuadric(quadric)
         glPopMatrix()
-

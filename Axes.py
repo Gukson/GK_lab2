@@ -1,5 +1,6 @@
 from OpenGL.GL import *
 
+
 def draw_axes():
     glBegin(GL_LINES)
 

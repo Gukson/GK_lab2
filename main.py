@@ -1,15 +1,15 @@
-import math
 import sys
 import threading
 
 from OpenGL.raw.GLU import gluPerspective, gluLookAt
 from glfw.GLFW import *
-from OpenGL.GL import *
+
 from Jajko import Jajko
 from Czajnik import Czajnik
 from GUI import GUI
 from Axes import *
 from Light import Light
+from Camera import Camera
 
 
 def startup():
@@ -22,8 +22,9 @@ jajko = Jajko()
 czajnik = Czajnik()
 czajnik.load()
 gui = GUI()
-light = Light(GL_LIGHT0)
-light2 = Light(GL_LIGHT1)
+camera = Camera()
+# light = Light(GL_LIGHT0)
+# light2 = Light(GL_LIGHT1)
 
 # Inicjalizacja zmiennych globalnych
 x_angle = 0.0
@@ -35,12 +36,9 @@ rotate_y_left = False
 rotate_y_right = False
 rotate_z_left = False
 rotate_z_right = False
+n_up = False
+n_down = False
 
-# Kamera
-radius = 10.0  # Promień (odległość kamery od centrum)
-angle = 0.0  # Obrót wokół osi Y
-elevation = 0.0  # Obrót wokół osi X (góra/dół)
-cx, cy, cz = 0.0, 0.0, 0.0  # Środek okręgu (punkt, na który patrzy kamera)
 
 # Mysz
 mouse_x_pos_old = 0
@@ -57,19 +55,12 @@ def render(time):
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)  # Wyczyść bufor koloru i bufor głębokości
     glLoadIdentity()  # Załaduj macierz jednostkową, aby zresetować bieżący stan przekształcenia
 
-    # Oblicz pozycję kamery
-    eyeX = cx + radius * math.cos(math.radians(elevation)) * math.cos(math.radians(angle))
-    eyeY = cy + radius * math.sin(math.radians(elevation))
-    eyeZ = cz + radius * math.cos(math.radians(elevation)) * math.sin(math.radians(angle))
-
-    gluLookAt(eyeX, eyeY, eyeZ,
-              cx, cy, cz,
-              0.0, 1.0, 0.0)
+    camera.render()
 
     draw_axes()
 
-    light.render()
-    light2.render()
+    # light.render()
+    # light2.render()
 
     glRotatef(x_angle, 1, 0, 0)  # Obróć obiekt wokół osi X o kąt `x_angle`
     glRotatef(y_angle, 0, 1, 0)  # Obróć obiekt wokół osi Y o kąt `y_angle`
@@ -110,10 +101,9 @@ def mouse_motion_callback(window, x_pos, y_pos):
         delta_x = x_pos - mouse_x_pos_old
         delta_y = y_pos - mouse_y_pos_old
 
-        angle += delta_x * 0.5  # Obrót w poziomie (wokół osi Y)
-        elevation += delta_y * 0.5  # Obrót w pionie (wokół osi X)
+        camera.angle += delta_x * 0.5  # Obrót w poziomie (wokół osi Y)
+        camera.elevation += delta_y * 0.5  # Obrót w pionie (wokół osi X)
 
-        elevation = max(-89.0, min(89.0, elevation))  # Ogranicz kąt pionowy, aby uniknąć problemów z "flipem"
 
     mouse_x_pos_old = x_pos
     mouse_y_pos_old = y_pos
@@ -130,15 +120,14 @@ def mouse_button_callback(window, button, action, mods):
 
 
 def scroll_callback(window, x_offset, y_offset):
-    global radius
-    radius -= y_offset * 0.5  # Zmiana promienia w zależności od scrolla
-    radius = max(2.0, min(50.0, radius))  # Ogranicz odległość od centrum
+    camera.radius -= y_offset * 0.5  # Zmiana promienia w zależności od scrolla
 
 
 def key_callback(window, key, scancode, action, mods):
     global rotate_x_up, rotate_x_down
     global rotate_y_left, rotate_y_right
     global rotate_z_left, rotate_z_right
+    global n_up, n_down
 
     if action == GLFW_PRESS:
         if key == GLFW_KEY_W:
@@ -153,6 +142,10 @@ def key_callback(window, key, scancode, action, mods):
             rotate_z_left = True  # Ustaw flagę na TRUE dla "Q" (obrót w lewo)
         elif key == GLFW_KEY_E:
             rotate_z_right = True  # Ustaw flagę na TRUE dla "E" (obrót w prawo)
+        elif key == GLFW_KEY_UP:
+            n_up = True
+        elif key == GLFW_KEY_DOWN:
+            n_down = True
 
     if action == GLFW_RELEASE:
         if key == GLFW_KEY_W:
@@ -167,10 +160,14 @@ def key_callback(window, key, scancode, action, mods):
             rotate_z_left = False  # Ustaw flagę na FALSE dla "Q"
         elif key == GLFW_KEY_E:
             rotate_z_right = False  # Ustaw flagę na FALSE dla "E"
+        elif key == GLFW_KEY_UP:
+            n_up = False
+        elif key == GLFW_KEY_DOWN:
+            n_down = False
 
 
 def main():
-    global x_angle, y_angle, z_angle
+    global x_angle, y_angle, z_angle, n_up, n_down
     render_thread = threading.Thread(target=gui.change_model)
     render_thread.start()
 
@@ -190,11 +187,22 @@ def main():
     glfwSetKeyCallback(window, key_callback)  # Zarejestruj callback dla obsługi klawiszy
     glfwSwapInterval(1)  # Ustaw synchronizację klatek (1 dla V-sync)
 
+    # glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [0.2, 0.2, 0.2, 1.0])  # Słabe światło otoczenia
+
     glEnable(GL_LIGHTING)  # Włącz oświetlenie
     glEnable(GL_LIGHT0)  # Włącz pierwsze źródło światła
     glEnable(GL_LIGHT1)  # Włącz drugie źródło światła
-    glEnable(GL_BLEND)
-    # glBlendFunc(GL_SRC_ALPHA, GL_ONE)  # Ustawienie funkcji mieszania
+    glEnable(GL_COLOR_MATERIAL)
+    glFrontFace(GL_CCW)
+    glEnable(GL_CULL_FACE)
+    glCullFace(GL_BACK)
+
+    # Tryb cieniowania
+    glShadeModel(GL_SMOOTH)
+
+
+
+    # Tryb cieniowania
 
     startup()
 
@@ -212,6 +220,14 @@ def main():
             z_angle += 1.0  # Zwiększ kąt obrotu wokół osi Z
         if rotate_z_right:
             z_angle -= 1.0  # Zmniejsz kąt obrotu wokół osi Z
+        if n_up:
+            jajko.increase_n()
+            n_up = False
+            print(jajko.N)
+        if n_down and jajko.N > 1:
+            jajko.reduce_n()
+            n_down = False
+            print(jajko.N)
 
         render(glfwGetTime())  # Renderuj scenę, przekazując czas jako parametr
         glfwSwapBuffers(window)  # Zamień bufory (double buffering)

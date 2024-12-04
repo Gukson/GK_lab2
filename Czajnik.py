@@ -1,8 +1,10 @@
 import numpy as np
 from OpenGL.GL import *
 
+
 class Czajnik:
     nodes = []
+    height = 0.0
 
     def load(self):
 
@@ -10,12 +12,15 @@ class Czajnik:
         for line in lines:
             line = line.split(" ")
             if line[0] == 'v':
+                if float(line[2]) > self.height:
+                    self.height = float(line[2])
                 self.nodes.append([float(line[1]), float(line[2]), float(line[3])])
 
     def render(self):
         n = np.array(self.nodes)
         glBegin(GL_POINTS)
         for i in range(len(n)):
+            n[i][1] -= self.height / 2
             glVertex3f(*n[i])
 
         glEnd()
