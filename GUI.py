@@ -40,6 +40,7 @@ class GUI:
         print("Aby obracać obraz wzdłuż osi Z użyj przycisków Q i E na klawiaturze\n")
 
         print("Aby obracać kamerą należy przytrzyamć LPM na obiekcie i zacząć poruszać myszą.\n")
+        print("Aby przybliżyć i oddalić kamerę użyj scrolla.\n")
 
         print(
             "Aby móc zmienić opcję wyświetlania obrazu nalezy najpierw nacisnąc na okno konsoli tak, aby pojawił się w niej kursor")

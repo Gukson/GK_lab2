@@ -42,16 +42,22 @@ n_up = False
 n_down = False
 change_light = False
 
+<<<<<<< Updated upstream
+=======
+def shutdown():
+    pass
+
+# Kamera
+radius = 10.0  # Promień (odległość kamery od centrum)
+angle = 0.0  # Obrót wokół osi Y
+elevation = 0.0  # Obrót wokół osi X (góra/dół)
+cx, cy, cz = 0.0, 0.0, 0.0  # Środek okręgu (punkt, na który patrzy kamera)
+>>>>>>> Stashed changes
 
 # Mysz
 mouse_x_pos_old = 0
 mouse_y_pos_old = 0
 left_mouse_button_pressed = False
-
-
-def shutdown():
-    pass
-
 
 def render(time):
     global angle, elevation, radius
@@ -79,6 +85,40 @@ def render(time):
         elif gui.kindOfEgg == 2:
             jajko.render_egg_with_triangle_strip()  # Renderuj jajko za pomocą "triangle strip"
 
+def mouse_motion_callback(window, x_pos, y_pos):
+    global mouse_x_pos_old, mouse_y_pos_old
+    global angle, elevation
+    global left_mouse_button_pressed
+
+    if left_mouse_button_pressed:  # Obracaj kamerę tylko, gdy lewy przycisk myszy jest wciśnięty
+        delta_x = x_pos - mouse_x_pos_old
+        delta_y = y_pos - mouse_y_pos_old
+
+        angle += delta_x * 0.5  # Obrót w poziomie (wokół osi Y)
+        elevation += delta_y * 0.5  # Obrót w pionie (wokół osi X)
+
+        elevation = max(-89.0, min(89.0, elevation))  # Ogranicz kąt pionowy, aby uniknąć problemów z "flipem"
+
+    mouse_x_pos_old = x_pos
+    mouse_y_pos_old = y_pos
+
+
+def mouse_button_callback(window, button, action, mods):
+    global left_mouse_button_pressed
+
+    if button == GLFW_MOUSE_BUTTON_LEFT:
+        if action == GLFW_PRESS:
+            left_mouse_button_pressed = True
+        elif action == GLFW_RELEASE:
+            left_mouse_button_pressed = False
+
+
+def scroll_callback(window, x_offset, y_offset):
+    global radius
+    radius -= y_offset * 0.5  # Zmiana promienia w zależności od scrolla
+    radius = max(2.0, min(50.0, radius))  # Ogranicz odległość od centrum
+
+
 
 def update_viewport(window, width, height):
     glMatrixMode(GL_PROJECTION)
@@ -95,6 +135,7 @@ def update_viewport(window, width, height):
     glLoadIdentity()
 
 
+<<<<<<< Updated upstream
 def mouse_motion_callback(window, x_pos, y_pos):
     global mouse_x_pos_old, mouse_y_pos_old
     global angle, elevation
@@ -125,6 +166,8 @@ def mouse_button_callback(window, button, action, mods):
 
 def scroll_callback(window, x_offset, y_offset):
     camera.radius -= y_offset * 0.5  # Zmiana promienia w zależności od scrolla
+=======
+>>>>>>> Stashed changes
 
 
 def key_callback(window, key, scancode, action, mods):

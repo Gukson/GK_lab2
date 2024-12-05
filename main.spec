@@ -5,7 +5,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('C:\\Users\\kuba\\Documents\\GitHub\\GK_lab2\\myenv\\Lib\\site-packages\\glfw\\glfw3.dll', '.'), ('C:\\Users\\kuba\\Documents\\GitHub\\GK_lab2\\Czajnik.py', '.'), ('C:\\Users\\kuba\\Documents\\GitHub\\GK_lab2\\czajnik.txt', '.'), ('C:\\Users\\kuba\\Documents\\GitHub\\GK_lab2\\myenv\\Lib\\site-packages\\OpenGL', '.')],
+    datas=[('C:\\Users\\kuba\\Documents\\GitHub\\GK_lab2\\myenv\\Lib\\site-packages\\glfw\\glfw3.dll', '.'), ('C:\\Users\\kuba\\Documents\\GitHub\\GK_lab2\\czajnik.txt', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
