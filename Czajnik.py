@@ -19,6 +19,7 @@ class Czajnik:
     def render(self):
         n = np.array(self.nodes)
         glBegin(GL_POINTS)
+        glColor3f(1.0, 1.0, 1.0)
         for i in range(len(n)):
             n[i][1] -= self.height / 2
             glVertex3f(*n[i])

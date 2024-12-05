@@ -55,24 +55,11 @@ class Jajko:
 
     # Funkcja odpowiedzialna za generowanie jajka z samych linii
     def render_line_egg(self):
-        # glBegin(GL_LINES)  # Rozpocznij rysowanie linii
-        # for i in range(self.N - 1):
-        #     for j in range(self.N - 1):
-        #         # Rysowanie linii poziomych
-        #         glVertex3f(*self.tab[i, j])  # Początek linii
-        #         glVertex3f(*self.tab[i + 1, j])  # Koniec linii
-        #
-        #         # Rysowanie linii pionowych
-        #         glVertex3f(*self.tab[i, j])  # Początek linii
-        #         glVertex3f(*self.tab[i, j + 1])  # Koniec linii
-        # glEnd()  # Zakończ rysowanie linii
         glPointSize(5.0)
         glBegin(GL_POINTS)
+        glColor3f(1.0, 1.0, 1.0)
         for j in range(self.N):
             for i in range(self.N):
-
-                # glColor3f(*self.color[j, i])
-                # glNormal3fv(self.normals[j, i])
                 glVertex3f(*self.tab[j, i])
         glEnd()
 
@@ -115,8 +102,11 @@ class Jajko:
             for j in range(self.N):
                 glColor3f(*self.colors[i][j])  # Ustaw kolor dla pierwszego wierzchołka
                 glVertex3f(*self.tab[i, j])  # Pierwszy wierzchołek trójkąta
+                glNormal3f(*self.normals[i, j])
                 glColor3f(*self.colors[i + 1][j])  # Ustaw kolor dla drugiego wierzchołka
                 glVertex3f(*self.tab[i + 1, j])  # Drugi wierzchołek trójkąta
+                glNormal3f(*self.normals[(i + 1) % self.N, j])
+
             glEnd()  # Zakończ rysowanie siatki trójkątów
         glFlush()  # Wymuś wykonanie wszystkich komend OpenGL
 

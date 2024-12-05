@@ -21,10 +21,12 @@ def startup():
 jajko = Jajko()
 czajnik = Czajnik()
 czajnik.load()
-gui = GUI()
+
 camera = Camera()
-# light = Light(GL_LIGHT0)
-# light2 = Light(GL_LIGHT1)
+light_mode = False
+light_number = 1
+gui = GUI()
+gui.light_list.append(Light(GL_LIGHT0))
 
 # Inicjalizacja zmiennych globalnych
 x_angle = 0.0
@@ -38,6 +40,7 @@ rotate_z_left = False
 rotate_z_right = False
 n_up = False
 n_down = False
+change_light = False
 
 
 # Mysz
@@ -59,8 +62,8 @@ def render(time):
 
     draw_axes()
 
-    # light.render()
-    # light2.render()
+    for light in gui.light_list:
+        light.render()
 
     glRotatef(x_angle, 1, 0, 0)  # Obróć obiekt wokół osi X o kąt `x_angle`
     glRotatef(y_angle, 0, 1, 0)  # Obróć obiekt wokół osi Y o kąt `y_angle`
@@ -101,6 +104,7 @@ def mouse_motion_callback(window, x_pos, y_pos):
         delta_x = x_pos - mouse_x_pos_old
         delta_y = y_pos - mouse_y_pos_old
 
+
         camera.angle += delta_x * 0.5  # Obrót w poziomie (wokół osi Y)
         camera.elevation += delta_y * 0.5  # Obrót w pionie (wokół osi X)
 
@@ -128,6 +132,7 @@ def key_callback(window, key, scancode, action, mods):
     global rotate_y_left, rotate_y_right
     global rotate_z_left, rotate_z_right
     global n_up, n_down
+    global change_light
 
     if action == GLFW_PRESS:
         if key == GLFW_KEY_W:
@@ -146,6 +151,11 @@ def key_callback(window, key, scancode, action, mods):
             n_up = True
         elif key == GLFW_KEY_DOWN:
             n_down = True
+        elif key == GLFW_KEY_L:
+            change_light = True
+
+
+
 
     if action == GLFW_RELEASE:
         if key == GLFW_KEY_W:
@@ -164,12 +174,15 @@ def key_callback(window, key, scancode, action, mods):
             n_up = False
         elif key == GLFW_KEY_DOWN:
             n_down = False
+        elif key == GLFW_KEY_L:
+            change_light = False
 
 
 def main():
-    global x_angle, y_angle, z_angle, n_up, n_down
+    global x_angle, y_angle, z_angle, n_up, n_down, change_light, light_mode, gui, light_number
     render_thread = threading.Thread(target=gui.change_model)
     render_thread.start()
+
 
     if not glfwInit():  # Inicjalizuj bibliotekę GLFW
         sys.exit(-1)
@@ -200,8 +213,6 @@ def main():
     # Tryb cieniowania
     glShadeModel(GL_SMOOTH)
 
-
-
     # Tryb cieniowania
 
     startup()
@@ -209,13 +220,29 @@ def main():
     while not glfwWindowShouldClose(window):  # Pętla główna aplikacji
         # Obracanie obiektu na podstawie wciśniętych klawiszy
         if rotate_x_up:
-            x_angle += 1.0  # Zwiększ kąt obrotu wokół osi X
+            if light_mode:
+                gui.light_list[light_number-1].elevation += 1
+                gui.light_list[light_number - 1].calculate_position()
+            else:
+                x_angle += 1.0  # Zwiększ kąt obrotu wokół osi X
         if rotate_x_down:
-            x_angle -= 1.0  # Zmniejsz kąt obrotu wokół osi X
+            if light_mode:
+                gui.light_list[light_number - 1].elevation -= 1
+                gui.light_list[light_number - 1].calculate_position()
+            else:
+                x_angle -= 1.0  # Zwiększ kąt obrotu wokół osi X
         if rotate_y_left:
-            y_angle -= 1.0  # Zmniejsz kąt obrotu wokół osi Y
+            if light_mode:
+                gui.light_list[light_number - 1].azimuth -= 1
+                gui.light_list[light_number - 1].calculate_position()
+            else:
+                y_angle -= 1.0  # Zwiększ kąt obrotu wokół osi X
         if rotate_y_right:
-            y_angle += 1.0  # Zwiększ kąt obrotu wokół osi Y
+            if light_mode:
+                gui.light_list[light_number - 1].azimuth += 1
+                gui.light_list[light_number - 1].calculate_position()
+            else:
+                y_angle += 1.0  # Zwiększ kąt obrotu wokół osi X
         if rotate_z_left:
             z_angle += 1.0  # Zwiększ kąt obrotu wokół osi Z
         if rotate_z_right:
@@ -223,11 +250,12 @@ def main():
         if n_up:
             jajko.increase_n()
             n_up = False
-            print(jajko.N)
         if n_down and jajko.N > 1:
             jajko.reduce_n()
             n_down = False
-            print(jajko.N)
+        if change_light:
+            light_mode = not light_mode
+            change_light = False
 
         render(glfwGetTime())  # Renderuj scenę, przekazując czas jako parametr
         glfwSwapBuffers(window)  # Zamień bufory (double buffering)
