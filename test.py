@@ -18,14 +18,14 @@ left_mouse_button_pressed = 0
 mouse_x_pos_old = 0
 delta_x = 0
 
-mat_ambient = [1.0, 1.0, 1.0, 1.0]
-mat_diffuse = [1.0, 1.0, 1.0, 1.0]
-mat_specular = [1.0, 1.0, 1.0, 1.0]
+# mat_ambient = [1.0, 1.0, 1.0, 1.0]
+# mat_diffuse = [1.0, 1.0, 1.0, 1.0]
+# mat_specular = [1.0, 1.0, 1.0, 1.0]
 mat_shininess = 20.0
 
-light_ambient = [0.1, 0.1, 0.0, 1.0]
-light_diffuse = [0.8, 0.8, 0.0, 1.0]
-light_specular = [1.0, 1.0, 1.0, 1.0]
+light_ambient = [0.5, 0.5, 0.5, 1.0]  # Białe światło otoczenia
+light_diffuse = [1.0, 1.0, 1.0, 1.0]  # Białe światło rozproszone
+light_specular = [1.0, 1.0, 1.0, 1.0]  # Białe światło refleksyjne
 light_position = [0.0, 0.0, 10.0, 1.0]
 
 att_constant = 1.0
@@ -38,19 +38,6 @@ def startup():
     glClearColor(0.0, 0.0, 0.0, 1.0)
     glEnable(GL_DEPTH_TEST)
 
-    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient)
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse)
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular)
-    glMaterialf(GL_FRONT, GL_SHININESS, mat_shininess)
-
-    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient)
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse)
-    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular)
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position)
-
-    glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, att_constant)
-    glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, att_linear)
-    glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, att_quadratic)
 
     glShadeModel(GL_SMOOTH)
     glEnable(GL_LIGHTING)
@@ -62,12 +49,6 @@ def startup():
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
-    image = Image.open("D2_t.tga")
-
-    glTexImage2D(
-        GL_TEXTURE_2D, 0, 3, image.size[0], image.size[1], 0,
-        GL_RGB, GL_UNSIGNED_BYTE, image.tobytes("raw", "RGB", 0, -1)
-    )
 
 
 def shutdown():

@@ -19,12 +19,11 @@ def startup():
 
 
 jajko = Jajko()
-czajnik = Czajnik()
-czajnik.load()
+czajnik = Czajnik("teapot.obj")
 
 camera = Camera()
 light_mode = False
-light_number = 1
+# light_number = 1
 gui = GUI()
 
 # Inicjalizacja zmiennych globalnych
@@ -40,6 +39,8 @@ rotate_z_right = False
 n_up = False
 n_down = False
 change_light = False
+texture = 1
+change_texture = False
 
 def shutdown():
     pass
@@ -154,7 +155,7 @@ def key_callback(window, key, scancode, action, mods):
     global rotate_y_left, rotate_y_right
     global rotate_z_left, rotate_z_right
     global n_up, n_down
-    global change_light, light_number
+    global change_light, light_number, change_texture, texture
 
     if action == GLFW_PRESS:
         if key == GLFW_KEY_W:
@@ -169,6 +170,15 @@ def key_callback(window, key, scancode, action, mods):
             rotate_z_left = True  # Ustaw flagę na TRUE dla "Q" (obrót w lewo)
         elif key == GLFW_KEY_E:
             rotate_z_right = True  # Ustaw flagę na TRUE dla "E" (obrót w prawo)
+        elif key == GLFW_KEY_1:
+            texture = 1
+            change_texture = True
+        elif key == GLFW_KEY_2:
+            texture = 2
+            change_texture = True
+        elif key == GLFW_KEY_3:
+            texture = 3
+            change_texture = True
 
 
 
@@ -189,7 +199,7 @@ def key_callback(window, key, scancode, action, mods):
 
 
 def main():
-    global x_angle, y_angle, z_angle, n_up, n_down, change_light, light_mode, gui, light_number
+    global x_angle, y_angle, z_angle, n_up, n_down, change_light, light_mode, gui, light_number, change_texture
     render_thread = threading.Thread(target=gui.change_model)
     render_thread.start()
 
@@ -209,42 +219,38 @@ def main():
     glfwSetScrollCallback(window, scroll_callback)  # Obsługa scrolla myszy
     glfwSetKeyCallback(window, key_callback)  # Zarejestruj callback dla obsługi klawiszy
     glfwSwapInterval(1)  # Ustaw synchronizację klatek (1 dla V-sync)
+    glEnable(GL_TEXTURE_2D)
+    glEnable(GL_CULL_FACE)
+
+    image = Image.open("P6_t.tga").convert("RGB")
+    rotated_image = image.rotate(0, expand=True)
+    glTexImage2D(
+        GL_TEXTURE_2D, 0, GL_RGB, rotated_image.size[0], rotated_image.size[1], 0,
+        GL_RGB, GL_UNSIGNED_BYTE, rotated_image.tobytes("raw", "RGB", 0, -1)
+    )
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-    glEnable(GL_TEXTURE_2D)
-    glEnable(GL_CULL_FACE)
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-
-    image = Image.open("D2_t.tga")
-
-
-    glTexImage2D(
-        GL_TEXTURE_2D, 0, 3, image.size[0], image.size[1], 0,
-        GL_RGB, GL_UNSIGNED_BYTE, image.tobytes("raw", "RGB", 0, -1)
-    )
-
-    # glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [0.2, 0.2, 0.2, 1.0])  # Słabe światło otoczenia
-
-    glEnable(GL_LIGHTING)  # Włącz oświetlenie
-    glEnable(GL_LIGHT0)  # Włącz pierwsze źródło światła
-    glEnable(GL_LIGHT1)  # Włącz drugie źródło światła
-    glEnable(GL_COLOR_MATERIAL)
-    glFrontFace(GL_CCW)
-    glEnable(GL_CULL_FACE)
-    glCullFace(GL_BACK)
-
-    # Tryb cieniowania
-    glShadeModel(GL_SMOOTH)
-
-    # Tryb cieniowania
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE)
+    glDisable(GL_LIGHTING)
 
     startup()
 
     while not glfwWindowShouldClose(window):  # Pętla główna aplikacji
+        if change_texture:
+            if texture == 1:
+                image = Image.open("D2_t.tga").convert("RGB")
+            elif texture == 2:
+                image = Image.open("P4_t.tga").convert("RGB")
+            else:
+                image = Image.open("P6_t.tga").convert("RGB")
+            rotated_image = image.rotate(90, expand=True)
+            glTexImage2D(
+                GL_TEXTURE_2D, 0, GL_RGB, rotated_image.size[0], rotated_image.size[1], 0,
+                GL_RGB, GL_UNSIGNED_BYTE, rotated_image.tobytes("raw", "RGB", 0, -1)
+            )
+            change_texture = False
         # Obracanie obiektu na podstawie wciśniętych klawiszy
         if rotate_x_up:
             if light_mode:
