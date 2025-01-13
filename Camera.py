@@ -15,7 +15,6 @@ class Camera:
         self.is_moving_away_from_center = False  # Flaga kontrolująca, czy kamera oddala się od centrum
 
     def adjust_radius(self, scroll_offset):
-        """Reguluj promień (odległość od centrum) przy pomocy scrolla."""
         self.radius += scroll_offset * self.scroll_speed
         if self.radius < self.MIN_RADIUS:  # Minimalna odległość kamery
             self.radius = self.MIN_RADIUS
@@ -24,7 +23,6 @@ class Camera:
             self.is_moving_away_from_center = True  # Kamera oddala się od centrum
 
     def update_vectors(self):
-        """Zaktualizuj wektory kamery na podstawie azymutu i elewacji."""
         # Oblicz kierunek patrzenia (front vector) na podstawie współrzędnych sferycznych
         frontX = math.cos(math.radians(self.elevation)) * math.cos(math.radians(self.angle))
         frontY = math.sin(math.radians(self.elevation))
@@ -44,7 +42,6 @@ class Camera:
         self.up = [upX, upY, upZ]
 
     def get_position(self):
-        """Oblicz pozycję kamery na podstawie współrzędnych sferycznych."""
         # Współrzędne sferyczne -> kartezjańskie
         x = self.radius * self.forward[0]
         y = self.radius * self.forward[1]
@@ -52,7 +49,6 @@ class Camera:
         return x, y, z
 
     def render(self):
-        """Ustaw kamerę za pomocą gluLookAt."""
         # Zaktualizuj wektory przed renderowaniem
         self.update_vectors()
 
